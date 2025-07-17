@@ -1,22 +1,86 @@
 <template>
   <v-app>
-    <v-app-bar color="primary">
-      <v-app-bar-nav-icon @click="toggleRail"></v-app-bar-nav-icon>
+
+    <template v-if="isLoggedIn&&!isLoginPage">
+      
+      
+    <!-- Sidebar Navigation Drawer -->
+    <v-navigation-drawer
+      v-model="drawer"
+      :rail="mini"
+      permanent
+      app
+      class="sidebar"
+      color="primary"
+      dark
+    >
+
+      <div class="logo-container" v-if="!mini">
+        <img src="/logo.png" alt="Logo" class="logo" />
+      </div>
+       <div v-else class="mini-logo-container">
+    <img src="/logo.png" alt="Mini Logo" class="mini-logo" />
+  </div>
+
+      <v-list>
+        <v-list-item
+          v-for="item in userMenuItems"
+          :key="item.title"
+          :to="item.to"
+          link
+        >
+          <template #prepend>
+            <v-icon>{{ item.icon }}</v-icon> 
+          </template>
+          <v-list-item-title v-if="!mini">
+            {{ item.title }}
+          </v-list-item-title>
+        </v-list-item>
+      </v-list>
+    </v-navigation-drawer>
+
+          <v-app-bar color="primary" dark>
+      <v-app-bar-nav-icon @click="toggleDrawer"></v-app-bar-nav-icon>
       <v-spacer></v-spacer>
+
+       <v-select
+  v-model="accountStore.selectedAccountId"
+  :items="accountStore.accounts"
+  item-title="name"
+  item-value="id"
+  label="Select Account"
+  hide-details
+  density="compact"
+  variant="underlined"
+  style="max-width: 200px"
+  @update:modelValue="accountStore.selectAccount"
+/>
+
+      <v-btn icon @click="toggleTheme">
+      <v-icon>{{ theme.global.current.value.dark ? 'mdi-weather-sunny' : 'mdi-weather-night' }}</v-icon>
+    </v-btn>
+
+      <!-- Account Dropdown -->
       <v-menu location="bottom end">
         <template v-slot:activator="{ props }">
-          <v-btn icon="mdi-account" v-bind="props"></v-btn>
+          <v-btn icon="mdi-account" color="secondary" v-bind="props"></v-btn>
         </template>
-        <v-list width="200">
+        <v-list width="240">
           <v-list-item>
             <v-list-item-title>Sharon Muthui</v-list-item-title>
             <v-list-item-subtitle>Admin</v-list-item-subtitle>
           </v-list-item>
+
+          <v-divider></v-divider>
+
+          <v-divider></v-divider>
+
           <v-card-actions class="justify-end">
             <v-btn
               variant="text"
               color="error"
               prepend-icon="mdi-logout"
+
               @click="logout"
             >
               Log out
@@ -25,65 +89,98 @@
         </v-list>
       </v-menu>
     </v-app-bar>
-    
-    <v-navigation-drawer 
-      v-model="drawer"
-      permanent
-      :rail="rail"  
+   
+    </template>
   
-    >
-      <v-list>
-        <v-list-item
-          v-for="item in userMenuItems"
-          :key="item.title"
-          :prepend-icon="item.icon"
-          :title="item.title"
-          :value="item.to"
-          :to="item.to"
-        >
-          <template v-slot:append v-if="item.badge && rail">
-            <v-badge :content="item.badge" color="error"></v-badge>
-          </template>
-        </v-list-item>
-      </v-list>
-      
-      
-      <!-- <template v-slot:append>
-        <v-divider></v-divider>
-        <v-list-item
-          prepend-icon="mdi-chevron-left"
-          title="Collapse"
-          @click.stop="rail = !rail"
-        ></v-list-item>
-      </template> -->
-    </v-navigation-drawer>
-    
+
     <v-main>
       <router-view></router-view>
     </v-main>
   </v-app>
 </template>
 
+
 <script setup>
-import { ref } from 'vue'
+import { ref,computed, watch} from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import {useTheme} from 'vuetify'
+import { useAccountStore } from '@/stores/account'
 
-const drawer = ref(true)
-const rail = ref(false)  // Controls mini variant
+const theme = useTheme()
 
+const router = useRouter()
+const route = useRoute()
+
+import { onMounted } from 'vue'
+const accountStore = useAccountStore()
+
+onMounted(() => {
+  accountStore.loadSavedAccount()
+})
+
+
+ const isLoginPage = computed(() => route.name === 'login')
+
+const isLoggedIn = computed(() => {
+  return localStorage.getItem('otp_verified') === 'true'
+})
+
+
+
+
+const drawer = ref(true) 
+const mini = ref(false)  
+
+const user = ref({ firstname: 'Sharon' })
+
+const toggleDrawer = () => {
+  mini.value = !mini.value 
+}
+
+const toggleTheme = () => {
+  theme.global.name.value = theme.global.current.value.dark ? 'light' : 'dark'
+}
+
+const logout = () => {
+   localStorage.removeItem('otp_verified')
+  console.log('Logging out...')
+   router.push({ name: 'login' })
+}
 
 const userMenuItems = [
+  { title: 'Dashboard', icon: 'mdi-view-dashboard', to: '/dashboard' },
   { title: 'Statements', icon: 'mdi-file-document-outline', to: '/statements' },
-  { title: 'Meter', icon: 'mdi-meter-electric', to: '/meter', badge: 3 },
+  { title: 'Meter', icon: 'mdi-meter-electric', to: '/meter' },
   { title: 'Bills', icon: 'mdi-credit-card', to: '/bills' },
   { title: 'Payments', icon: 'mdi-cash-check', to: '/payments' },
 ]
+const accountOptions = computed(() => accountStore.accounts)
 
-const logout = () => {
-  console.log('Logging out...')
-}
+
 </script>
 
+
 <style scoped>
+.logo-container,
+.mini-logo-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 16px 0;
+}
+
+.logo {
+  max-height: 60px;
+  width: auto;
+}
+.mini-logo {
+  max-height: 30px;
+  width: auto;
+}
+
+.v-toolbar-title {
+  padding-left: 12px;
+}
 
 .v-navigation-drawer--rail {
   width: 56px !important;
@@ -104,66 +201,3 @@ const logout = () => {
 }
 </style>
 
-<!-- <template>
-  <v-app>
-    <div class="app-container">
-      <v-navigation-drawer permanent width="240" class="left-nav">
-        <template #prepend>
-          <v-list-item title="PORTAL" prepend-icon="mdi-application"></v-list-item>
-          <v-divider></v-divider>
-        </template>
-        <v-list>
-          <v-list-item
-            v-for="item in navItems"
-            :key="item.route"
-            :to="item.route"
-            :prepend-icon="item.icon"
-            :title="item.text"
-            active-class="active-nav-item"
-          ></v-list-item>
-        </v-list>
-      </v-navigation-drawer>
-
-      <v-main class="main-content">
-        <router-view></router-view>
-      </v-main>
-    </div>
-  </v-app>
-</template>
-
-<script setup>
-const navItems = [
-  { text: 'Statements', icon: ' mdi-file-document-outline', route: '/statements' },
-  { text: 'Meter', icon: 'mdi-meter-electric ', route: '/meter', badge: 3 },
-  { text: 'Bills', icon: 'mdi-credit-card', route: '/bills' },
-  { text: 'Payments', icon: 'mdi-cash-check', route: '/payments' },
-]
-</script>
-
-<style scoped>
-.app-container {
-  display: flex;
-  min-height: 100vh;
-}
-
-.left-nav {
-  background-color: #f5f5f5;
-  border-right: 1px solid #e0e0e0;
-  height: 100vh;
-  position: fixed;
-}
-
-.main-content {
-  margin-left: 240px;
-  padding: 20px;
-}
-.active-nav-item {
-  background-color: #e3f2fd;
-  color: #1976d2;
-  border-left: 4px solid #1976d2;
-}
-
-.v-list {
-  padding: 0;
-}
-</style> -->

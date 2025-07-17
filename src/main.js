@@ -1,5 +1,7 @@
 import './assets/main.css'
 import vuetify from './plugins/vuetify'
+import 'leaflet/dist/leaflet.css'
+
 
 // import VOtpInput from 'vue3-otp-input'
 // app.component('v-otp-input', VOtpInput)

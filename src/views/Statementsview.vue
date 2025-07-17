@@ -1,4 +1,7 @@
 <template>
+  <v-btn to="/" variant="text" icon>
+  <v-icon>mdi-arrow-left</v-icon>
+</v-btn>
   <div class="statements-container">
     <h2>Account Statements</h2>
     

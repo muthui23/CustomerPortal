@@ -1,76 +1,89 @@
 <template>
+   <v-container class="pa-4">
+  <v-btn to="/" variant="text" icon>
+    <v-icon>mdi-arrow-left</v-icon>
+  </v-btn>
+
   <div class="bills-container">
-    <h2>Your Bills</h2>
-    
-    <div class="bills-list">
-      <div class="bill-card" v-for="bill in bills" :key="bill.id">
-        <div class="bill-header">
-          <h3>Bill #{{ bill.id }}</h3>
-          <span class="due-date" :class="{ 'overdue': isOverdue(bill.dueDate) }">
-            Due {{ formatDate(bill.dueDate) }}
-          </span>
-        </div>
-        
-        <div class="bill-details">
-          <div class="detail">
-            <span>Amount Due:</span>
-            <span class="amount">{{ formatCurrency(bill.amount) }}</span>
-          </div>
-          <div class="detail">
-            <span>Billing Period:</span>
-            <span>{{ formatPeriod(bill.startDate, bill.endDate) }}</span>
-          </div>
-        </div>
-        
-        <div class="bill-actions">
-          <button @click="viewBillDetails(bill)" class="view-btn">
-            View Details
-          </button>
-          <button @click="payBill(bill)" class="pay-btn">
-            Pay Bill
-          </button>
-        </div>
-      </div>
-    </div>
+    <h2 class="page-title">Your Bills</h2>
+
+    <!-- Date Filters -->
+    <v-row dense class="mb-4">
+      <v-col cols="12" sm="6" md="3">
+        <v-text-field
+          v-model="startDate"
+          label="Start Date"
+          type="date"
+          variant="outlined"
+          density="comfortable"
+        />
+      </v-col>
+      <v-col cols="12" sm="6" md="3">
+        <v-text-field
+          v-model="endDate"
+          label="End Date"
+          type="date"
+          variant="outlined"
+          density="comfortable"
+        />
+      </v-col>
+    </v-row>
+
+    <!-- Filtered Bills -->
+    <v-row class="bills-list" dense>
+     <v-col
+  v-for="bill in bills"
+  :key="bill.id"
+  cols="12"
+  sm="6"
+  md="4"
+>  
+  <v-card>
+    <v-card-title>Bill #{{ bill.id }}</v-card-title>
+    <v-card-text>
+            <div class="label">Amount Due</div>
+            <div class="value">KES {{ bill.amount.toLocaleString() }}</div>
+
+            <div class="label">Billing Period</div>
+            <div class="value">{{ formatPeriod(bill.startDate, bill.endDate) }}</div>
+          </v-card-text>
+ <v-card-actions class="bill-actions">
+            <v-btn color="black" variant="outlined" @click="viewBillDetails(bill)">
+              View Details
+            </v-btn>
+            <v-btn
+              color="secondary"
+              variant="flat"
+              @click="payBill(bill)"
+              v-if="bill.status !== 'Paid'"
+            >
+              Pay Now
+            </v-btn>
+          </v-card-actions>
+  </v-card>
+</v-col>
+    </v-row>
   </div>
+   </v-container>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
+import { useAccountStore } from '@/stores/account'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
+const startDate = ref('')
+const endDate = ref('')
 
-// Mock data
-const bills = ref([
-  {
-    id: 'BL2023-1001',
-    amount: 145.75,
-    dueDate: '2023-07-15',
-    startDate: '2023-06-01',
-    endDate: '2023-06-30',
-    status: 'Pending'
-  },
-  {
-    id: 'BL2023-1002',
-    amount: 132.50,
-    dueDate: '2023-06-15',
-    startDate: '2023-05-01',
-    endDate: '2023-05-31',
-    status: 'Overdue'
-  },
-  {
-    id: 'BL2023-1003',
-    amount: 128.90,
-    dueDate: '2023-05-15',
-    startDate: '2023-04-01',
-    endDate: '2023-04-30',
-    status: 'Paid'
-  }
-])
+
+const accountStore = useAccountStore()
+const bills = computed(() => accountStore.selectedAccount?.bills || [])
+
+
 
 const viewBillDetails = (bill) => {
-  router.push({ 
+  router.push({
     name: 'bill-details',
     params: { id: bill.id },
     state: { bill }
@@ -78,15 +91,13 @@ const viewBillDetails = (bill) => {
 }
 
 const payBill = (bill) => {
-  router.push({ 
+  router.push({
     name: 'payment',
     query: { billId: bill.id }
   })
 }
 
-const isOverdue = (dueDate) => {
-  return new Date(dueDate) < new Date()
-}
+const isOverdue = (dueDate) => new Date(dueDate) < new Date()
 
 const formatDate = (dateString) => {
   return new Date(dateString).toLocaleDateString('en-US', {
@@ -103,13 +114,56 @@ const formatPeriod = (startDate, endDate) => {
 }
 
 const formatCurrency = (amount) => {
-  return new Intl.NumberFormat('en-US', {
+  return new Intl.NumberFormat('en-KE', {
     style: 'currency',
-    currency: 'ksh'
+    currency: 'KES'
   }).format(amount)
 }
 </script>
 
 <style scoped>
-/* Same styles as previous implementation */
+.bills-container {
+  padding: 24px;
+  background-color: var(--v-theme-background);
+  color: var(--v-theme-on-background);
+}
+
+.page-title {
+  font-size: 2rem;
+  font-weight: 600;
+  margin-bottom: 24px;
+}
+
+.bill-card {
+  border-radius: 14px;
+  background-color: var(--v-theme-surface);
+  color: var(--v-theme-on-surface);
+  transition: 0.3s ease-in-out;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.due-date {
+  font-size: 0.9rem;
+  color: var(--v-theme-on-surface);
+}
+
+.due-date.overdue {
+  color: red;
+  font-weight: bold;
+}
+
+.amount {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: var(--v-theme-on-surface);
+}
+
+.bill-actions {
+  display: flex;
+  justify-content: space-between;
+  padding: 16px;
+  color: var(--v-theme-on-surface);
+
+}
 </style>
+

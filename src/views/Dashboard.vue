@@ -1,39 +1,90 @@
 <template>
-  <div class="dashboard-container">
-    <div class="welcome-message text-center mb-6">
-      <h2>Welcome, <span class="username">{{ userName }}</span>! 👋</h2>
-    </div>
+  <v-container class="py-6" fluid>
+    <div class="dashboard-container">
+      <!-- Welcome Message -->
+      <div class="welcome-message mb-6">
+        <h2>Welcome, <span class="username">{{ userName }}</span>! 👋</h2>
+      </div>
 
-    <v-row dense>
-      <v-col cols="12" sm="6" md="3" v-for="card in cards" :key="card.title">
-        <v-card :color="card.bg" class="dashboard-card" elevation="2">
-          <div class="d-flex align-center">
-            <v-icon :color="card.iconColor" size="36" class="mr-4">{{ card.icon }}</v-icon>
-            <div>
-              <div class="label">{{ card.title }}</div>
-              <div class="value">{{ card.value }}</div>
+      <!-- Metrics Row -->
+      <v-row dense>
+        <v-col cols="12" sm="6" md="4">
+          <v-card class="dashboard-card" elevation="2" color="surface">
+            <div class="card-content">
+              <v-icon size="36" color="green-darken-2" class="icon-animated">mdi-wallet</v-icon>
+              <div>
+                <div class="label">Balance</div>
+                <div class="value">KES {{ account.balance.toLocaleString() }}</div>
+              </div>
             </div>
-          </div>
-        </v-card>
-      </v-col>
-    </v-row>
-  </div>
+          </v-card>
+        </v-col>
+
+        <v-col cols="12" sm="6" md="4">
+          <v-card class="dashboard-card" elevation="2" color="surface">
+            <div class="card-content">
+              <v-icon size="36" color="amber-darken-3" class="icon-animated">mdi-receipt</v-icon>
+              <div>
+                <div class="label">Current Bill</div>
+                <div class="value">KES {{ account.currentBill.toLocaleString() }}</div>
+              </div>
+            </div>
+          </v-card>
+        </v-col>
+
+        <v-col cols="12" sm="6" md="4">
+          <v-card class="dashboard-card" elevation="2" color="surface">
+            <div class="card-content">
+              <v-icon size="36" color="pink-darken-2" class="icon-animated">mdi-alert</v-icon>
+              <div>
+                <div class="label">Arrears</div>
+                <div class="value">KES {{ account.arrears.toLocaleString() }}</div>
+              </div>
+            </div>
+          </v-card>
+        </v-col>
+      </v-row>
+
+      <!-- Map Section -->
+      <div class="map-section mt-10">
+        <h3 class="map-title">Your Location</h3>
+        <div id="map" class="dashboard-map"></div>
+      </div>
+    </div>
+  </v-container>
 </template>
+
 
 <script setup>
 const userName = "Sharon";
+import { computed, onMounted } from 'vue'
+import L from 'leaflet'
+import { useAccountStore } from '@/stores/account'
 
-const cards = [
-  { title: "Balance", value: "Ksh 15,000", icon: "mdi-wallet", iconColor: "blue-darken-2", bg: "blue-lighten-5" },
-  { title: "Current Bill", value: "Ksh 4,000", icon: "mdi-receipt", iconColor: "green-darken-2", bg: "green-lighten-5" },
-  { title: "Payments", value: "Ksh 3,000", icon: "mdi-cash", iconColor: "orange-darken-2", bg: "orange-lighten-5" },
-  { title: "Arrears", value: "Ksh 1,000", icon: "mdi-alert", iconColor: "red-darken-2", bg: "red-lighten-5" }
-];
+
+const accountStore = useAccountStore()
+const account = computed(() => accountStore.selectedAccount)
+
+onMounted(() => {
+  const map = L.map('map').setView([-1.2921, 36.8219], 13) // Nairobi coords
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap contributors',
+  }).addTo(map)
+
+  L.marker([-1.2921, 36.8219]).addTo(map)
+    .bindPopup('You are here!')
+    .openPopup()
+})
+
 </script>
 
 <style scoped>
 .dashboard-container {
   padding: 24px;
+  background-color:var(--v-theme-on-surface) ;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
 
 .welcome-message h2 {
@@ -43,39 +94,57 @@ const cards = [
 }
 
 .username {
-  color: #1976d2;
+  color: #16ad4e; 
   font-weight: 600;
 }
 
 .dashboard-card {
-  background-color: white;
-  border-radius: 14px;
-  padding: 24px;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  border-radius: 16px;
+  padding: 20px;
+  min-height: 120px;
   display: flex;
   align-items: center;
-  min-height: 120px;
-}
+  justify-content: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  font-weight: 500;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  .label,
+  .value,
+  .due-date,
+  .amount{
+   color: var(--v-theme-on-surface);
+    background-color: var(--v-theme-surface);
+  
+  }
 
+}
 .dashboard-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+}
+
+.card-content {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.icon {
+  transition: transform 0.3s ease;
 }
 
 .label {
   font-size: 0.85rem;
-  color: #6b7280; /* soft gray */
+  opacity: 0.7;
   margin-bottom: 4px;
-  letter-spacing: 0.02em;
+  color: var(--v-theme-on-surface);;
 }
 
 .value {
   font-size: 1.4rem;
   font-weight: 600;
-  color: #111827; /* dark neutral */
+  color: #222;
 }
-
 
 @media (max-width: 960px) {
   .value {
@@ -88,7 +157,27 @@ const cards = [
 }
 
 .dashboard-card:hover .icon-animated {
-  transform: scale(1.2) rotate(2deg);
+  transform: scale(1.1) rotate(3deg);
 }
 
+.map-section {
+  margin-top: 40px;
+}
+
+.map-title {
+  font-weight: 600;
+  font-size: 1.2rem;
+  margin-bottom: 12px;
+}
+
+.dashboard-map {
+  width: 100%;
+  height: 400px;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.05);
+}
 </style>
+
+
+
