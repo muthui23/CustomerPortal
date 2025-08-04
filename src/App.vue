@@ -1,4 +1,5 @@
 <template>
+  
   <v-app>
 
     <template v-if="isLoggedIn&&!isLoginPage">
@@ -8,6 +9,7 @@
     <v-navigation-drawer
       v-model="drawer"
       :rail="mini"
+    
       permanent
       app
       class="sidebar"

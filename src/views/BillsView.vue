@@ -1,9 +1,6 @@
 <template>
    <v-container class="pa-4">
-  <v-btn to="/" variant="text" icon>
-    <v-icon>mdi-arrow-left</v-icon>
-  </v-btn>
-
+ <v-container class="py-6" fluid>
   <div class="bills-container">
     <h2 class="page-title">Your Bills</h2>
 
@@ -51,19 +48,12 @@
             <v-btn color="black" variant="outlined" @click="viewBillDetails(bill)">
               View Details
             </v-btn>
-            <v-btn
-              color="secondary"
-              variant="flat"
-              @click="payBill(bill)"
-              v-if="bill.status !== 'Paid'"
-            >
-              Pay Now
-            </v-btn>
           </v-card-actions>
   </v-card>
 </v-col>
     </v-row>
   </div>
+   </v-container>
    </v-container>
 </template>
 
@@ -126,6 +116,8 @@ const formatCurrency = (amount) => {
   padding: 24px;
   background-color: var(--v-theme-background);
   color: var(--v-theme-on-background);
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
 
 .page-title {

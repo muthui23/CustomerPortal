@@ -1,9 +1,7 @@
 <template>
+   <v-container class="py-6" fluid>
   <v-container class="meter-container">
-    <v-btn to="/" variant="text" icon>
-      <v-icon>mdi-arrow-left</v-icon>
-    </v-btn>
-
+    
     <h2>Meter Details</h2>
 
     <div class="meter-info" v-if="meter">
@@ -56,6 +54,7 @@
       </div>
     </div>
   </v-container>
+   </v-container>
 </template>
 
 <script setup>
@@ -144,12 +143,15 @@ const formatCurrency = (amount) => {
 }
 
 .consumption-section {
-   background-color: var(--v-theme-surface);
+  background-color: var(--v-theme-surface);
   color: var(--v-theme-on-surface);
   margin-top: 2rem;
 }
 
 .consumption-table {
+  background-color: var(--v-theme-surface);
+  color: var(--v-theme-on-surface);
+
   overflow-x: auto;
 }
 

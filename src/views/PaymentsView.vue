@@ -1,7 +1,5 @@
 <template>
-  <v-btn to="/" variant="text" icon>
-  <v-icon>mdi-arrow-left</v-icon>
-</v-btn>
+ <v-container class="py-6" fluid>
   <div class="payments-container">
     <div class="header">
       <h2>Payments</h2>
@@ -67,6 +65,7 @@
     </v-dialog>
   </div>
   </div>
+ </v-container>
 </template>
 
 <script setup>
@@ -133,6 +132,9 @@ const amount = ref('')
 <style scoped>
 .payments-container {
   padding: 24px;
+  background-color:var(--v-theme-on-surface) ;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
 
 .header h2 {

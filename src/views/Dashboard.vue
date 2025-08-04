@@ -9,7 +9,7 @@
       <!-- Metrics Row -->
       <v-row dense>
         <v-col cols="12" sm="6" md="4">
-          <v-card class="dashboard-card" elevation="2" color="surface">
+          <v-card class="dashboard-card" elevation="5" color="surface">
             <div class="card-content">
               <v-icon size="36" color="green-darken-2" class="icon-animated">mdi-wallet</v-icon>
               <div>
@@ -114,6 +114,7 @@ onMounted(() => {
   .amount{
    color: var(--v-theme-on-surface);
     background-color: var(--v-theme-surface);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
   
   }
 
